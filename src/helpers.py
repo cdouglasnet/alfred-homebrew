@@ -101,4 +101,5 @@ def search_key_for_action(action):
     elements = []
     elements.append(action['name'])
     elements.append(action['description'])
-    return u' '.join(elements)
+    return ' '.join(elements)
+

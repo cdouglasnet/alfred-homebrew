@@ -17,7 +17,7 @@ See :ref:`the User Manual <background-processes>` for more information
 and examples.
 """
 
-from __future__ import print_function, unicode_literals
+
 
 import signal
 import sys

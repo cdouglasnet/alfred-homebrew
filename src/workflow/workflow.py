@@ -19,10 +19,10 @@ up your Python script to best utilise the :class:`Workflow` object.
 
 """
 
-from __future__ import print_function, unicode_literals
+
 
 import binascii
-import cPickle
+import pickle
 from copy import deepcopy
 import json
 import logging
@@ -569,7 +569,7 @@ class SerializerManager(object):
         """
         if name not in self._serializers:
             raise ValueError('No such serializer registered : {0}'.format(
-                             name))
+                name))
 
         serializer = self._serializers[name]
         del self._serializers[name]
@@ -644,7 +644,7 @@ class CPickleSerializer(object):
         :rtype: object
 
         """
-        return cPickle.load(file_obj)
+        return pickle.load(file_obj)
 
     @classmethod
     def dump(cls, obj, file_obj):
@@ -658,7 +658,7 @@ class CPickleSerializer(object):
         :type file_obj: ``file`` object
 
         """
-        return cPickle.dump(obj, file_obj, protocol=-1)
+        return pickle.dump(obj, file_obj, protocol=-1)
 
 
 class PickleSerializer(object):
@@ -826,7 +826,7 @@ class Settings(dict):
         if os.path.exists(self._filepath):
             self._load()
         elif defaults:
-            for key, val in defaults.items():
+            for key, val in list(defaults.items()):
                 self[key] = val
             self.save()  # save default settings
 
@@ -1100,7 +1100,7 @@ class Workflow(object):
             if self.alfred_env.get('workflow_bundleid'):
                 self._bundleid = self.alfred_env.get('workflow_bundleid')
             else:
-                self._bundleid = unicode(self.info['bundleid'], 'utf-8')
+                self._bundleid = str(self.info['bundleid'], 'utf-8')
 
         return self._bundleid
 
@@ -1299,7 +1299,7 @@ class Workflow(object):
             # the library is in. CWD will be the workflow root if
             # a workflow is being run in Alfred
             candidates = [
-                os.path.abspath(os.getcwdu()),
+                os.path.abspath(os.getcwd()),
                 os.path.dirname(os.path.abspath(os.path.dirname(__file__)))]
 
             # climb the directory tree until we find `info.plist`
@@ -1988,7 +1988,7 @@ class Workflow(object):
         # `query` is a substring of initials, e.g. ``doh`` matches
         # "The Dukes of Hazzard"
         elif (match_on & MATCH_INITIALS_CONTAIN and
-                query in initials):
+              query in initials):
             score = 95.0 - (len(initials) / len(query))
 
             return (score, MATCH_INITIALS_CONTAIN)
@@ -2083,7 +2083,7 @@ class Workflow(object):
 
             if not sys.stdout.isatty():  # Show error in Alfred
                 if text_errors:
-                    print(unicode(err).encode('utf-8'), end='')
+                    print(str(err).encode('utf-8'), end='')
                 else:
                     self._items = []
                     if self._name:
@@ -2093,7 +2093,7 @@ class Workflow(object):
                     else:  # pragma: no cover
                         name = os.path.dirname(__file__)
                     self.add_item("Error in workflow '%s'" % name,
-                                  unicode(err),
+                                  str(err),
                                   icon=ICON_ERROR)
                     self.send_feedback()
             return 1
@@ -2245,7 +2245,7 @@ class Workflow(object):
 
             version = self.version
 
-        if isinstance(version, basestring):
+        if isinstance(version, str):
             from update import Version
             version = Version(version)
 
@@ -2456,7 +2456,7 @@ class Workflow(object):
             h = groups.get('hex')
             password = groups.get('pw')
             if h:
-                password = unicode(binascii.unhexlify(h), 'utf-8')
+                password = str(binascii.unhexlify(h), 'utf-8')
 
         self.logger.debug('got password : %s:%s', service, account)
 
@@ -2697,8 +2697,8 @@ class Workflow(object):
         """
         encoding = encoding or self._input_encoding
         normalization = normalization or self._normalizsation
-        if not isinstance(text, unicode):
-            text = unicode(text, encoding)
+        if not isinstance(text, str):
+            text = str(text, encoding)
         return unicodedata.normalize(normalization, text)
 
     def fold_to_ascii(self, text):
@@ -2717,8 +2717,8 @@ class Workflow(object):
         if isascii(text):
             return text
         text = ''.join([ASCII_REPLACEMENTS.get(c, c) for c in text])
-        return unicode(unicodedata.normalize('NFKD',
-                       text).encode('ascii', 'ignore'))
+        return str(unicodedata.normalize('NFKD',
+                                         text).encode('ascii', 'ignore'))
 
     def dumbify_punctuation(self, text):
         """Convert non-ASCII punctuation to closest ASCII equivalent.

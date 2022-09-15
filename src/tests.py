@@ -21,7 +21,7 @@ class HomeBrewTestCase(unittest.TestCase):
             'name': 'a',
             'description': 'b',
         })
-        self.assertEquals(result, u'a b')
+        self.assertEqual(result, 'a b')
 
     def test_brew_get_installed_packages(self):
         result = brew.get_installed_formulae()
